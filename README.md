@@ -4,13 +4,21 @@
 Main Parts:
 
 Arduino Mega 2650 Pro Mini x 1 (Alliexpress),
+
 Arduino Pro Mini x 2 (Alliexpress),
+
 DFPlayer Mini MP3 player (Amazon),
+
 PAM8403 Stereo Amplifier (Amazon),
+
 AIYIMA Speakers 8 Ohm 5W x 2 (Alliexpress),
+
 DSD TECH HM-17 Bluetooth 4.1 Module (Amazon),
+
 CJMCU 12 Bit WS2812 5050 RGB LED Ring (Reactor)(Banggood),
+
 DC Adaptor 9V 2A,
+
 
 Speedometer:
 
@@ -19,9 +27,13 @@ Adafruit 0.56" 4-Digit 7-Segment Display w/I2C Backpack (Pimoroni)
 Modelmodz Parts:
 
 Flux Capacitor,
+
 Xmas Tree,
+
 Dash Display,
+
 Center Console
+
 
 This system is controlled by an Bluetooth Android app created in App Inventor 2(ai2)
 (http://ai2.appinventor.mit.edu/)
@@ -42,7 +54,9 @@ D02 - LEFT SIDELIGHT
 D03 - RIGHT SIDELIGHT
 
 D04 - 
+
 D05 - 
+
 D06 - 
 
 D07 - FLUXBAND (EL Wire)
@@ -58,7 +72,9 @@ D11 - FC_FOUR (Flux capacitor inner lights)
 D12 - FC_MID (Flux capacitor center light)
 
 D13 - 
+
 D14 - 
+
 D15 - 
 
 D16 - TC_OFF (Time circuits OFF light, center console)
@@ -90,6 +106,7 @@ D28 - RED/AMBER/GREEN KEYPAD
 D29 - WHITE KEYPAD
 
 D30 - 
+
 D31 - 
 
 D32 - TC_ON (Time circuits ON light, center console)
@@ -111,7 +128,9 @@ D39 - L_BLINK (Left rear indicator)
 D40 - R_BLINK (Right rear indicator)
 
 D41 - 
+
 D42 - 
+
 D43 - 
 
 D44 - DIGITAL USE ONLY - NOT PWM
@@ -142,19 +161,25 @@ A1  -
 A2  - ACCELERATOR SWITCH
 
 A3  - 
+
 A4  - 
+
 A5  - 
 
 A6  - DOOR SWITCH 1
 
 A7  - 
+
 A8  -
+
 A9  -
 
 A10 - DOOR SWITCH 2 
 
 A11 - 
+
 A12 - 
+
 A13 - 
 
 A14 - FRONT HOOD SWITCH
@@ -172,4 +197,5 @@ http://www.martyncurrey.com/arduino-hm-10-and-app-inventor-2/
 
 MIT App Inventor 2 -
 https://appinventor.mit.edu
+
 
