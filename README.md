@@ -1,6 +1,8 @@
 # EM_BTTF_Delorean_Lights_and_Sound
  Light and sound effects for the Eaglemoss Back To The Future Delorean model car.
 
+Main Parts:
+
 Arduino Mega 2650 Pro Mini x 1 (Alliexpress)
 Arduino Pro Mini x 2 (Alliexpress)
 DFPlayer Mini MP3 player (Amazon)
