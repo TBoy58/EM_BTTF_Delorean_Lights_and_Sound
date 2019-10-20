@@ -1167,12 +1167,12 @@
     {
       timeCctsOn = true;
       assSerial.write(TM_CCT_ON_MSG);
-      my_mp3_play(1,12); // Time circuits ON sound    
+      my_mp3_play(1,12); // Time circuits ON sound  
+      TC_OFF.off();         // Time circuits OFF light off
+      TC_ON.on();            // Time circuits ON light on  
       TCD.on();
       RED_AMBER_GREEN_KEYPAD.on();
       delay(3000);
-      TC_OFF.off();         // Time circuits OFF light off
-      TC_ON.on();            // Time circuits ON light on
       PLUTONIUM_BACKLIGHT.on();  
       PSU.on();              // Power supply unit ON      
       delay(1000);  
