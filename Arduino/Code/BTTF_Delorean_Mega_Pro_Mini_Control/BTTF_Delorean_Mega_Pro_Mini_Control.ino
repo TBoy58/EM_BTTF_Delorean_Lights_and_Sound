@@ -29,7 +29,7 @@
     
     #define Ready_LED 22        // 受信可能赤外線モジュールPIN (NOT A PIN)       
     #define PINMAX 22       // シフトレジスタービット数
-    #define LEDMAX 22       // LED定義数
+    #define LEDMAX 23       // LED定義数
     #define INDMAX 4        // Maximum indicator lights
     #define MAXINTERVALS 33
     #define SW_FUNCS 22
@@ -72,6 +72,8 @@
 
     DigitalPin RED_AMBER_GREEN_KEYPAD(28);
     DigitalPin WHITE_KEYPAD(29);
+
+    DigitalPin PLATE_LIGHTS(30); // Licence plate lights
        
     DigitalPin TC_ON(32);       // Center console time circuits ON light
     DigitalPin TCD(33);         // Time circuits display
@@ -107,21 +109,22 @@
                                  L_SIDE,                 // 4
                                  R_SIDE,                 // 5
                                  REAR_LIGHTS,            // 6
-                                 DIPPED_LIGHTS,          // 7
-                                 F_BEAM,                 // 8   
-                                 DOOR_1_LIGHTS,          // 9
-                                 DOOR_2_LIGHTS,          //10
-                                 ROOF_LIGHT,             //11
-                                 FRONT_HOOD_LIGHT,       //12
-                                 TC_OFF,                 //13
-                                 TC_ON,                  //14
-                                 TCD,                    //15
-                                 RED_AMBER_GREEN_KEYPAD, //16
-                                 EIGHTY8_MPH,            //17
-                                 P_EMPTY,                //18
-                                 DASH_BACKLIGHT,         //19
-                                 PSU,                    //20                                               
-                                 PLUTONIUM_BACKLIGHT };  //21   
+                                 PLATE_LIGHTS,           // 7
+                                 DIPPED_LIGHTS,          // 8
+                                 F_BEAM,                 // 9   
+                                 DOOR_1_LIGHTS,          //10
+                                 DOOR_2_LIGHTS,          //11
+                                 ROOF_LIGHT,             //12
+                                 FRONT_HOOD_LIGHT,       //13
+                                 TC_OFF,                 //14
+                                 TC_ON,                  //15
+                                 TCD,                    //16
+                                 RED_AMBER_GREEN_KEYPAD, //17
+                                 EIGHTY8_MPH,            //18
+                                 P_EMPTY,                //19
+                                 DASH_BACKLIGHT,         //20
+                                 PSU,                    //21                                               
+                                 PLUTONIUM_BACKLIGHT };  //22   
 
                                 
                                  
@@ -617,6 +620,8 @@
        RED_AMBER_GREEN_KEYPAD.beginOUT();
        WHITE_KEYPAD.beginOUT();
 
+       PLATE_LIGHTS.beginOUT();
+
        TC_ON.beginOUT();      
        TCD.beginOUT();
        EIGHTY8_MPH.beginOUT();
@@ -1057,7 +1062,8 @@
             break;
           case 2:
             DIPPED_LIGHTS.on(); // Main lights     
-            REAR_LIGHTS.on(); // Rear lights            
+            REAR_LIGHTS.on(); // Rear lights
+            PLATE_LIGHTS.on();            
             sendDashLight(MAIN_LIGHTS_ON);
             assSerial.write(LGHTS_ON_ON_MSG);
             assSerial.write(SW_ST[3]);
@@ -1104,7 +1110,8 @@
             break;
           case 1:      
             DIPPED_LIGHTS.off(); // Main lights     
-            REAR_LIGHTS.off(); // Rear lights   
+            REAR_LIGHTS.off(); // Rear lights
+            PLATE_LIGHTS.off();   
             sendDashLight(MAIN_LIGHTS_OFF);
             assSerial.write(LGHTS_OFF_ON_MSG);
             assSerial.write(SW_ST[3]);
@@ -1375,7 +1382,8 @@
             L_SIDE.level(80); //  Left side light ON
             R_SIDE.level(80); //  Right side light ON  
             DIPPED_LIGHTS.on(); // DIPPED_LIGHTS.on(); Main beam, rear lights, licence plate ON
-            REAR_LIGHTS.on(); // REAR_LIGHTS.on();           
+            REAR_LIGHTS.on(); // REAR_LIGHTS.on();
+            PLATE_LIGHTS.on();           
             sendDashLight(MAIN_LIGHTS_ON);  // Main lights ON                  
             
             third = false;
@@ -1696,6 +1704,7 @@
             R_SIDE.level(80); // Right side light ON
             DIPPED_LIGHTS.on(); // DIPPED_LIGHTS.on(); Main beam, rear lights, licence plate ON
             REAR_LIGHTS.on();; // REAR_LIGHTS.on();
+            PLATE_LIGHTS.on();
             sendDashLight(MAIN_LIGHTS_ON);  // Main lights ON
 
             PLUTONIUM_BACKLIGHT.on();
@@ -1998,6 +2007,7 @@
             DASH_BACKLIGHT.on();
             DIPPED_LIGHTS.on(); //Main beam, rear lights, licence plate ON
             REAR_LIGHTS.on();
+            PLATE_LIGHTS.on();
             //SW_ST[3] = 1;     // Set side lights switch ON 
             
             sendDashLight(MAIN_LIGHTS_ON);  // Main lights ON
@@ -2307,6 +2317,7 @@
             R_SIDE.on(); // Right side light ON 
             DIPPED_LIGHTS.on(); //Main beam, rear lights, licence plate ON
             REAR_LIGHTS.on();
+            PLATE_LIGHTS.on();
             //SW_ST[3] = 1;     // Set side lights switch ON 
             sendDashLight(MAIN_LIGHTS_ON);
             
@@ -3053,7 +3064,8 @@
            F_BEAM.on();
            L_SIDE.on(); //Left side light ON
            R_SIDE.on(); //Right side light ON 
-           REAR_LIGHTS.on();           
+           REAR_LIGHTS.on();
+           PLATE_LIGHTS.on();           
            EIGHTY8_MPH.on();
            speedo.println(8888);
            speedo.drawColon(true);
@@ -3084,7 +3096,8 @@
            F_BEAM.off();
            L_SIDE.off(); //Left side light OFF
            R_SIDE.off(); //Right side light OFF
-           REAR_LIGHTS.off();                      
+           REAR_LIGHTS.off();
+           PLATE_LIGHTS.off();                      
            EIGHTY8_MPH.off();
            speedo.clear();
            speedo.writeDisplay(); 
