@@ -29,7 +29,7 @@
     
     #define Ready_LED 22        // 受信可能赤外線モジュールPIN (NOT A PIN)       
     #define PINMAX 22       // シフトレジスタービット数
-    #define LEDMAX 23       // LED定義数
+    #define LEDMAX 24       // LED定義数
     #define INDMAX 4        // Maximum indicator lights
     #define MAXINTERVALS 33
     #define SW_FUNCS 22
@@ -86,6 +86,7 @@
     DigitalPin L_BLINK(39);   // Left rear indicator
     DigitalPin R_BLINK(40);   // Right rear indicator
 
+    DigitalPin COURTESY_LIGHT(47);
     DigitalPin ENGINE_SPACE_LIGHT(49); 
     DigitalPin DOOR_1_LIGHTS(50);
     DigitalPin DOOR_2_LIGHTS(51);
@@ -111,20 +112,21 @@
                                  REAR_LIGHTS,            // 6
                                  PLATE_LIGHTS,           // 7
                                  DIPPED_LIGHTS,          // 8
-                                 F_BEAM,                 // 9   
-                                 DOOR_1_LIGHTS,          //10
-                                 DOOR_2_LIGHTS,          //11
-                                 ROOF_LIGHT,             //12
-                                 FRONT_HOOD_LIGHT,       //13
-                                 TC_OFF,                 //14
-                                 TC_ON,                  //15
-                                 TCD,                    //16
-                                 RED_AMBER_GREEN_KEYPAD, //17
-                                 EIGHTY8_MPH,            //18
-                                 P_EMPTY,                //19
-                                 DASH_BACKLIGHT,         //20
-                                 PSU,                    //21                                               
-                                 PLUTONIUM_BACKLIGHT };  //22   
+                                 F_BEAM,                 // 9 
+                                 COURTESY_LIGHT,         //10  
+                                 DOOR_1_LIGHTS,          //11
+                                 DOOR_2_LIGHTS,          //12
+                                 ROOF_LIGHT,             //13
+                                 FRONT_HOOD_LIGHT,       //14
+                                 TC_OFF,                 //15
+                                 TC_ON,                  //16
+                                 TCD,                    //17
+                                 RED_AMBER_GREEN_KEYPAD, //18
+                                 EIGHTY8_MPH,            //19
+                                 P_EMPTY,                //20
+                                 DASH_BACKLIGHT,         //21
+                                 PSU,                    //22                                               
+                                 PLUTONIUM_BACKLIGHT };  //23   
 
                                 
                                  
@@ -632,7 +634,8 @@
        
        L_BLINK.beginOUT();
        R_BLINK.beginOUT();
-       
+
+       COURTESY_LIGHT.beginOUT();
        DOOR_1_LIGHTS.beginOUT();
        DOOR_2_LIGHTS.beginOUT();
        FRONT_HOOD_LIGHT.beginOUT();       
@@ -2547,8 +2550,9 @@
         {
           if(doorsClosed)
           {
-           sendDashLight(DOOR_OPEN);
-           doorsClosed = false;
+             COURTESY_LIGHT.on();
+             sendDashLight(DOOR_OPEN);
+             doorsClosed = false;
           }
                     
         }
@@ -2556,8 +2560,9 @@
         {
           if(!doorsClosed)
           {
-            sendDashLight(DOORS_CLOSED);
-            doorsClosed = true;
+              COURTESY_LIGHT.off();
+              sendDashLight(DOORS_CLOSED);
+              doorsClosed = true;
           }
        }
           
