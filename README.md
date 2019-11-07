@@ -105,7 +105,7 @@ D28 - RED/AMBER/GREEN KEYPAD
 
 D29 - WHITE KEYPAD
 
-D30 - 
+D30 - PLATE LIGHTS
 
 D31 - 
 
@@ -139,7 +139,7 @@ D45 - DIGITAL USE ONLY - NOT PWM
 
 D46 - HM17 RX PIN (Bluetooth module)
 
-D47 - 
+D47 - COURTESY LIGHT
 
 D48 - HM17 TX PIN (Bluetooth module)
 
