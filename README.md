@@ -21,6 +21,8 @@ CJMCU 12 Bit WS2812 5050 RGB LED Ring (Reactor)(Banggood),
 
 DC Adaptor 9V 2A,
 
+The shops in brackets are where I bought the items. Shop around :)
+
 
 Speedometer:
 
@@ -203,5 +205,7 @@ https://appinventor.mit.edu
 FaceBook Demo -
 https://www.facebook.com/noci50/videos/10156699960936765/
 
+DfRobot Beetle - 
+https://wiki.dfrobot.com/Beetle_SKU_DFR0282
 
 
