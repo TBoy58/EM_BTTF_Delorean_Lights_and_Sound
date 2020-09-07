@@ -5,7 +5,9 @@ Main Parts:
 
 Arduino Mega 2650 Pro Mini x 1 (Alliexpress),
 
-Arduino Pro Mini x 2 (Alliexpress),
+Arduino Pro Mini x 1 (Driver's Console) (Alliexpress),
+
+DfRobot Beetle x 1 (Reactor) (Pi Hut)
 
 DFPlayer Mini MP3 player (Amazon),
 

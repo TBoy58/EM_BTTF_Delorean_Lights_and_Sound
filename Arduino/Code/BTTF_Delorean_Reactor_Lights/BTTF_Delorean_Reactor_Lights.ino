@@ -9,7 +9,7 @@
 
   #define I2C_ADDRESS 7
 
-  #define PIN 6
+  #define PIN 9
   #define MAX_NEOPIXELS 12
   #define MAX_FLUX_LEVEL 7
   #define RE_ENTRY 10
