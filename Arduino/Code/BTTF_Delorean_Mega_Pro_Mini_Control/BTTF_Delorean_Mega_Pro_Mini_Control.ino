@@ -155,8 +155,8 @@
     byte VOL_DN_ON_MSG          = 115;
     byte LGHTS_OFF_OFF_MSG      = 116;
     byte LGHTS_OFF_ON_MSG       = 117;
-    byte RF_LGHT_OFF_MSG        = 118;
-    byte RF_LGHT_ON_MSG         = 119;
+    byte DISP_MODE_OFF_MSG      = 118; // DISPLAY MODE OFF
+    byte DISP_MODE_ON_MSG       = 119; // DISPLAY MODE ON
     byte PSS_LGHT_OFF_MSG       = 120;
     byte PSS_LGHT_ON_MSG        = 121;
     byte HORN_OFF_MSG           = 122;
@@ -189,7 +189,7 @@
     boolean hazardIndicatorsOn     = false;
     boolean brakeLightsOn          = false;
     boolean reverseLightsOn        = false;
-    boolean roofLightOn            = false;
+    boolean isDisplayModeOn        = false;
 
 
     
@@ -266,6 +266,7 @@
     long previousSpeedoMicros = 0;
     long previousSpeedoReturnMicros = 0;
     long previousFlashMillis = 0;
+    long previousDisplayModeMillis = 0;
     int j = 0; // Access for INTERVAL and B8_INTERVAL arrays
     int pEmptyLoopCount = 0; 
     
@@ -275,6 +276,8 @@
     long speedoInterval = 0;
     long speedoReturnInterval = 400;
     long B8_speedoIntervalSetting = 6500;
+    long displayModeInterval      = 1000;
+    int displayModeCounter        = 0;
     boolean speedoOut = false;
     boolean speedoReturn = false;
     uint16_t counter = 0;    
@@ -387,7 +390,7 @@
     int MusicST    = 0;      //音楽再生
     //===RADIO========================
     #define FIRST_TRACK  21
-    #define LAST_TRACK   38
+    #define LAST_TRACK   40
     int currentTrack = 0;
     int trackNumber = 0;
     
@@ -739,6 +742,40 @@
             updateLevelOneMatrix();           
        }
 
+       if((currentMillis - previousDisplayModeMillis >= displayModeInterval) && isDisplayModeOn)
+            {
+                  previousDisplayModeMillis = currentMillis;
+                  
+                  displayModeCounter++;
+                  
+                  if(displayModeCounter > 4)
+                  {
+                    displayModeCounter = 1;
+                  }
+                  
+                  switch(displayModeCounter)
+                  {
+                    case 1:
+                      WHITE_KEYPAD.on();
+                      break;
+                    
+                    case 2:
+                      WHITE_KEYPAD.off();
+                      break;
+                    
+                    case 3:
+                      P_EMPTY.on();
+                      break;
+                    
+                    case 4:
+                      P_EMPTY.off();
+                      break;
+
+                    default:
+                      break;
+                  }
+            }
+
        if ( radioOn && DFP_BUSY.readState() )
        {
           // PLAY NEXT TRACK AFTER PREVIOUS TRACK FINISHED
@@ -780,12 +817,7 @@
             radioOn = false;        
         }
 
-        switchOffMultipleFunctions();
-       
-        if (roofLightOn) {
-            assSerial.write(RF_LGHT_OFF_MSG);
-            roofLightOn = false;
-        }
+        switchOffMultipleFunctions();       
                       
         delay(100);
         assSerial.write(PWR_OFF_MSG);
@@ -1182,6 +1214,7 @@
       TC_ON.on();            // Time circuits ON light on  
       TCD.on();
       RED_AMBER_GREEN_KEYPAD.on();
+      ROOF_LIGHT.on(); 
       delay(3000);
       PLUTONIUM_BACKLIGHT.on();  
       PSU.on();              // Power supply unit ON      
@@ -1204,6 +1237,7 @@
       fluxSwitch = false;
       resetFluxTree();
       my_mp3_play(1,15); // Time circuits OFF sound
+      ROOF_LIGHT.off(); 
       TCD.off();
       RED_AMBER_GREEN_KEYPAD.off();
       PSU.off();
@@ -1236,6 +1270,45 @@
     }
 
     /*================END HORN=========================*/
+
+    /*================DISPLAY MODE ON=========================*/
+    void displayModeOn()
+      {
+        switchOffMultipleFunctions(); 
+        assSerial.write(DISP_MODE_ON_MSG);
+        isDisplayModeOn = true;
+        
+        lightsOn(); // SIDE LIGHTS ON
+        
+        delay(1000);
+        
+        lightsOn(); // MAIN LIGHTS ON
+        
+        delay(1000);
+        
+        timeCircuitsOn(); // TIME CIRCUITS ON
+
+        EIGHTY8_MPH.on();
+       }
+    /*================END DISPLAY MODE ON=========================*/
+
+    /*================DISPLAY MODE OFF=========================*/
+    void displayModeOff()
+      {      
+        isDisplayModeOn = false;
+
+        timeCircuitsOff();
+        
+        EIGHTY8_MPH.off();
+        WHITE_KEYPAD.off();
+        P_EMPTY.off();
+        
+        lightsOff(); 
+        lightsOff();                
+                
+        assSerial.write(DISP_MODE_OFF_MSG);
+      }
+    /*================END DISPLAY MODE OFF=========================*/
 
 /*==============================================================================
  *      TIME TRAVEL ROUTINE            TIME TRAVEL ROUTINE        
@@ -2642,7 +2715,7 @@
             FC_MID.off();
           }
       
-          if (fluxLevel > 6) {
+          if ((fluxLevel > 6) || isDisplayModeOn) {
             FLUX_BAND.on();
           } else {
             FLUX_BAND.off();
@@ -2919,16 +2992,16 @@
           lightsOff();
           break;
      
-        case 118:  // Roof light OFF
-          roofLightOn = false;
-          ROOF_LIGHT.off();
-          assSerial.write(RF_LGHT_OFF_MSG);
+        case 118:  // Turn OFF Display Mode
+          isDisplayModeOn = false;
+          displayModeOff();
+          assSerial.write(DISP_MODE_OFF_MSG);
           break;
 
-        case 119:  // Roof light ON
-          roofLightOn = true;
-          ROOF_LIGHT.on();
-          assSerial.write(RF_LGHT_ON_MSG);
+        case 119:  // Turn ON Display Mode
+          isDisplayModeOn = true;
+          displayModeOn();
+          assSerial.write(DISP_MODE_ON_MSG);
           break;
      
         case 121:  // Passing lights
