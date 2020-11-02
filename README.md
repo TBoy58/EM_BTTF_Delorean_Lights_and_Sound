@@ -49,7 +49,8 @@ In the sounds folder, the mp3 folder needs to be placed on to an empty sd card
 for the DFPlayer.
 
 The radio tracks are numbered in the same format as the car sounds from
-0021 to 0038 and placed in the mp3 folder.
+0021 to 0040 (20 tracks) and placed in the mp3 folder.
+Radio tracks are not supplied.
 
 Mega Pro Mini Pin Allocations
 
@@ -192,6 +193,9 @@ A15 - ENGINE COMPARTMENT SWITCH
 
 
 References:
+
+Modelmodz store:
+https://modelmodz.com/
 
 Concurrent programming - 
 https://learn.adafruit.com/multi-tasking-the-arduino-part-1/ditch-the-delay
