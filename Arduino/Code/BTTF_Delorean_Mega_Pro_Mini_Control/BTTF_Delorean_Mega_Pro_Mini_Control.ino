@@ -1,17 +1,31 @@
     /*
-     * BTTF DeAGOSTINI DELOREAN LIGHT AND SOUND SYSTEM - TBoy58
+     * BTTF EAGLEMOSS DELOREAN LIGHT AND SOUND SYSTEM - TBoy58
      * Based on:
-      DeAGOSTINI REAR_LIGHTS To The Furture Delorian Light & Sound Control Mega2560 V1.10 By LsKaz
-      2018/04/08 V1.09 ADD door open sound 
-      2018/04/28 V1.10 ADD door LED2(D10),change hood LED pin(D11) 
-
+     * DeAGOSTINI REAR_LIGHTS To The Future Delorian Light & 
+     * Sound Control Mega2560 V1.10 By LsKaz
       ===============GITHUB COPY===================================================
-    */
-    
+    */    
    
     /*
-     * Version 4.07 - TBoy58 24Oct18
-     * Works with Dash_Lights_2.00_release_241018
+     * A program that controls lights and sound for the Eaglemoss back to the Future
+     * Delorean model.
+     * This program works with the following:
+     * 
+     *  BTTF_Delorean_Dash_Lights - Arduino program controlling dash lights
+     *  
+     *  BTTF_Delorean_Reactor_Lights - Arduino program controlling the rear reactor
+     *  
+     *  EM_BTTF_Delorean_Remote_Control.apk - Android remote control app
+     *  
+     *  DigitalPin.h - a self-made library. Allows I/O pins to be accessed intuitively
+     *  
+     *  To reduce the number of microcontrollers required this program employs
+     *  multi-tasking techniques. See 
+     *  https://learn.adafruit.com/multi-tasking-the-arduino-part-1/ditch-the-delay
+     *  for background.
+     *  
+     *  NOTE: Any Japanese comments that remain are left as a mark of respect for LsKaz
+     *  whose program inspired this one.
      */
     
     #include <DFPlayer_Mini_Mp3.h>
@@ -198,8 +212,9 @@
     bool    SW_LED[INDMAX]  = {    0,  0,  0,  0}; // LED点灯スイッチ
     int     IND_INTERVAL[INDMAX] = {    45, 45,  0,  0}; // LED点灯時間(0:常灯)    
     bool    SW_On[INDMAX]   = {};          // LED点灯（0:消灯中 1:点灯中）
-    int     SW_ST[LEDMAX]   = {};          // LED点灯ステータス（0:消灯中 1:点灯中）
     int     FLASH_DELAY[INDMAX]  = {};          // LEDカウンタ
+
+    int     headLights      = 0; // 1 = SIDE-LIGHTS  2 = MAIN LIGHTS  3 = FULL BEAM
 
     
     boolean OLD_Door1=0;
@@ -451,6 +466,11 @@
     } 
 
 /*==============================================================================
+ *     END MP3 ROUTINES          END MP3 ROUTINES            END MP3 ROUTINES        
+ *==============================================================================*/       
+     
+
+/*==============================================================================
  *      RADIO ROUTINES            RADIO ROUTINES        
  *==============================================================================*/    
 
@@ -505,7 +525,9 @@
       assSerial.write(RAD_PREV_OFF_MSG);
     }
 
-//===========END RADIO FUNCTIONS===================================
+/*==============================================================================
+ *      END RADIO ROUTINES            END RADIO ROUTINES        
+ *==============================================================================*/    
 
 
 /*==============================================================================
@@ -555,7 +577,7 @@
                     }
                     else
                     {
-                      if(SW_ST[3] == 0)
+                      if(!headLightsOn)
                       {
                         L_SIDE.off();
                         sendDashLight(LEFT_INDICATOR_OFF);
@@ -576,7 +598,7 @@
                     }
                     else
                     {
-                      if(SW_ST[3] == 0)
+                      if(!headLightsOn)
                       {
                         R_SIDE.off();
                         sendDashLight(RIGHT_INDICATOR_OFF);
@@ -599,14 +621,21 @@
        }       
       }     
     }
+
+/*==============================================================================
+ *     END INDICATOR FLASH ROUTINE           END INDICATOR FLASH ROUTINE        
+ *==============================================================================*/    
+    
     
 
     /*=================== 初期セットアップ =========================== */
 
 /*==============================================================================
  *      SETUP ROUTINE            SETUP ROUTINE        SETUP ROUTINE
- *==============================================================================*/        
-    /*===================SETUP=============================*/
+ *==============================================================================*/  
+       
+    /*===================SYSTEM INITIALISATION=============================*/
+    
     void setup()  // 
     {
        L_SIDE.beginOUT();
@@ -704,22 +733,27 @@
         Serial.println("START loop");
     }
 
-    /*===================END SETUP=============================*/
-
+/*==============================================================================
+ *     END SETUP          END SETUP           END SETUP           
+ *==============================================================================*/
+     
 
 /*==============================================================================
  *      MAIN LOOP            MAIN LOOP            MAIN LOOP       
  *==============================================================================*/        
     
     /*=================== メイン処理 =========================== */
-    /*===================MAIN LOOP=============================*/
-    void loop() {
-      getAppInstr();
-      checkSwitches();
-      currentMillis = millis();
+
+    void loop() 
+    {
+      getAppInstr();  // Get any instructions from the App
+      checkSwitches();  // Check if any car switches have been operated
+      currentMillis = millis(); // Get the current system time in milliseconds
+      
       if(currentMillis - previousFlashMillis >= flashInterval) 
       {         
-            // Call to turn the indicators ON or OFF every 5ms   
+            // Call to turn the indicators ON or OFF every 5ms  
+             
             previousFlashMillis = currentMillis;
             
             indicatorFlash();
@@ -727,6 +761,10 @@
 
       if ((currentMillis - previousFluxMillis >= fluxInterval[fluxLevel]) && fluxSwitch) 
           {     
+                // Updates the state of the Flux Capacitor determined by the boolean
+                // fluxSwitch and the integer fluxLevel.
+                // The rate of update is detemined by the long array fluxInterval
+                
                 previousFluxMillis = currentMillis;
 
                 // FLUX CAPACITOR UPDATE ROUTINE
@@ -734,7 +772,12 @@
           }
 
 
-      if ((currentMillis - previousLevelOneMatrixMillis >= matrixInterval_1) && (fluxLevel == 1)) {
+      if ((currentMillis - previousLevelOneMatrixMillis >= matrixInterval_1) && (fluxLevel == 1)) 
+      {
+            // Updates the state of the Status Indicator Display (SID) determined by the 
+            // integer fluxLevel
+            // The rate of update is detemined by the long matrixInterval_1 (Level 1 interval)
+            // This routine is only relevant for the timeCircuitsOn routine
 
             previousLevelOneMatrixMillis = currentMillis;
 
@@ -744,6 +787,9 @@
 
        if((currentMillis - previousDisplayModeMillis >= displayModeInterval) && isDisplayModeOn)
             {
+                  // Routine to switch the keypad white and plutonium empty lights ON and OFF
+                  // during display mode
+                  
                   previousDisplayModeMillis = currentMillis;
                   
                   displayModeCounter++;
@@ -779,19 +825,27 @@
        if ( radioOn && DFP_BUSY.readState() )
        {
           // PLAY NEXT TRACK AFTER PREVIOUS TRACK FINISHED
+          
           radioNext();
        }
 
-       if ( SW_ST[1] == 1 && DFP_BUSY.readState() )
+       if ( engineStartOn  && DFP_BUSY.readState() )
        {
           // CONTINUE ENGINE SOUND ON A LOOP IF ENGINE ON
+          
           my_mp3_play(1,5);
        }
     }
 
-    /*===================END MAIN LOOP=============================*/
+/*==============================================================================
+ *     END MAIN LOOP          END MAIN LOOP                 
+ *==============================================================================*/
+    
 
-    /*==================POWER ON=========================*/
+/*==============================================================================
+ *      POWER ON           POWER ON                 
+ *==============================================================================*/
+
     void powerOn()
     {
       TC_OFF.on();
@@ -799,155 +853,172 @@
       assSerial.write(MP3_Vol);
     }
 
-    /*==================END POWER ON=====================*/
+/*==============================================================================
+ *     END POWER ON          END POWER ON                 
+ *==============================================================================*/
 
-    /*==================POWER OFF========================*/
+    
+
+/*==============================================================================
+ *      POWER OFF           POWER OFF                 
+ *==============================================================================*/
 
     void powerOff()
-    {
-        for(int i = 0 ; i < LEDMAX ; i++) {
-          D_PIN[i].off();
-          SW_ST [i] = 0;
-          }            // 全ＬＥＤ ＯＦＦ
-        lightsOut();            
-        my_mp3_stop(); // MP3停止 
-        
-        if (radioOn) {
-            assSerial.write(RADIO_STOP_MSG);
-            radioOn = false;        
+    {        
+        if (radioOn) 
+        {
+            radioStop();       
         }
 
-        switchOffMultipleFunctions();       
-                      
-        delay(100);
+        switchOffMultipleFunctions(); 
+
+        TC_OFF.off();
+       
         assSerial.write(PWR_OFF_MSG);
         
     }
 
+/*==============================================================================
+ *     END POWER OFF          END POWER OFF                 
+ *==============================================================================*/
 
-    /*==================END POWER OFF========================*/
 
-    /*=================SWITCH OFF MULTIPLE FUNCTIONS=========*/
+/*==============================================================================
+ *      SWITCH OFF MULTIPLE FUNCTIONS           SWITCH OFF MULTIPLE FUNCTIONS                 
+ *==============================================================================*/
 
-    void switchOffMultipleFunctions(){
-       if (timeCctsOn) {
+    void switchOffMultipleFunctions()
+    {      
+       if (timeCctsOn) 
+       {
             timeCircuitsOff();
-        }
-        if (engineStartOn) {
+       }
+        
+        if (engineStartOn) 
+        {
             engineStop();
-            delay(100);
         }
-        if (headLightsOn) {
+        
+        if (headLightsOn) 
+        {
+            F_BEAM.off();
+            DIPPED_LIGHTS.off(); // Main lights     
+            REAR_LIGHTS.off(); // Rear lights
+            PLATE_LIGHTS.off(); 
             L_SIDE.off(); // Left side-light
             R_SIDE.off(); // Right side-light
+            DASH_BACKLIGHT.off();            
             SW_LED[2]=false; // Left side-light
             SW_LED[3]=false; // Right side-light
+            sendDashLight(LIGHTS_OFF); 
+            headLights = 0;
+            headLightsOn = false;
             assSerial.write(LGHTS_OFF_ON_MSG);
-            SW_ST[3] = 0;
-            assSerial.write(SW_ST[3]);
+            assSerial.write(headLights);
             delay(100);
             assSerial.write(LGHTS_OFF_OFF_MSG);
-            headLightsOn = false;          
         }
-        if (leftIndicatorsOn) {
-            SW_LED[0]=false;            
-            SW_LED[1]=false;
-            SW_LED[2]=false;
-            indicatorsOn = false;
-            sendDashLight(LEFT_INDICATOR_OFF);
-            assSerial.write(LFT_IND_OFF_MSG);  
-            leftIndicatorsOn = false;  
+
+        if (hazardIndicatorsOn) 
+        {
+            hazardLightsOff();
         }
-        if (rightIndicatorsOn) {
-            SW_LED[0]=false;            
-            SW_LED[1]=false;
-            SW_LED[2]=false;
-            indicatorsOn = false;
-            sendDashLight(RIGHT_INDICATOR_OFF);
-            assSerial.write(RGT_IND_OFF_MSG); 
-            rightIndicatorsOn = false;           
+
+        if (leftIndicatorsOn) 
+        {
+            leftIndOff();  
         }
-        if (hazardIndicatorsOn) {
-            SW_LED[0]=false;            
-            SW_LED[1]=false;
-            SW_LED[2]=false;            
-            SW_LED[3]=false;
-            indicatorsOn = false;
-            sendDashLight(LEFT_INDICATOR_OFF);
-            sendDashLight(RIGHT_INDICATOR_OFF);
-            assSerial.write(HZD_LGHT_OFF_MSG);
-            hazardIndicatorsOn = false;
+
+        if (rightIndicatorsOn) 
+        {
+            rightIndOff();           
+        }        
+
+        if (brakeLightsOn) 
+        {
+            brakesOff();         
         }
-        if (brakeLightsOn) {
-            SW_ST[2] = 0;
-            assSerial.write(BRAKE_LIGHTS_OFF_MSG);
-            appBrake = false; 
-            brakeLightsOn = false;         
-        }
-        if (reverseLightsOn) {
+        
+        if (reverseLightsOn) 
+        {
             REVERSE_LIGHTS.off();
             assSerial.write(REV_LGHT_OFF_MSG);
             reverseLightsOn = false;
         }
-
-        delay(100);
       
     }
 
+/*==============================================================================
+ *     END SWITCH OFF MULTIPLE FUNCTIONS          END SWITCH OFF MULTIPLE FUNCTIONS                 
+ *==============================================================================*/
+   
 
+ /*==============================================================================
+ *        ENGINE START             ENGINE START                 
+ *==============================================================================*/
 
-    /*=================END SWITCH OFF MULTIPLE FUNCTIONS=========*/
-
-    /*================ENGINE START==========================*/
     void engineStart()
     {      
       engineStartOn = true;
       assSerial.write(ENG_ON_MSG);
-      SW_ST[1] = 1;
       my_mp3_play(1,3);
       sendDashLight(LIGHTS_ON);
       delay(3000);
       sendDashLight(LIGHTS_OFF);
     }
-    /*================END ENGINE START==========================*/
+    
+/*==============================================================================
+ *       END ENGINE START            END ENGINE START                 
+ *==============================================================================*/
+     
 
-    /*================ENGINE STOP==========================*/
+/*==============================================================================
+ *        ENGINE STOP             ENGINE STOP                 
+ *==============================================================================*/
 
     void engineStop()
     {
       engineStartOn = false;
-      SW_ST[1] = 0;
       my_mp3_stop();
       assSerial.write(ENG_OFF_MSG);
     }
 
-    /*================END ENGINE STOP==========================*/ 
-
-    /*================ACCELERATOR==========================*/
-
+/*==============================================================================
+ *       END ENGINE STOP            END ENGINE STOP                 
+ *==============================================================================*/
+    
+    
+/*==============================================================================
+ *       ACCELERATOR            ACCELERATOR                 
+ *==============================================================================*/
+ 
     void accelerator()
     {
       if(!radioOn)
       {
-        if(SW_ST[1] == 1)
+        if(engineStartOn)
         {
           assSerial.write(ACCEL_ON_MSG);
           my_mp3_play(1,4);
-          SW_ST[1] = 1;
           delay(1000);
           assSerial.write(ACCEL_OFF_MSG);
         }
       }
     }
 
-    /*================END ACCELERATOR==========================*/
+/*==============================================================================
+ *      END ACCELERATOR           END ACCELERATOR                 
+ *==============================================================================*/
+     
 
-    /*================LEFT INDICATOR ON==========================*/ 
-
+/*==============================================================================
+ *       LEFT INDICATOR ON            LEFT INDICATOR ON                 
+ *==============================================================================*/
+ 
     void leftIndOn()
     {    
         leftIndicatorsOn = true;
-        if(SW_ST[3] == 0)
+        if(!headLightsOn)
         {
             IND_INTERVAL[0] = 45;
             IND_INTERVAL[1] = 45; 
@@ -966,31 +1037,51 @@
         indicatorsOn = true;          
     }
 
+/*==============================================================================
+ *      END LEFT INDICATOR ON           END LEFT INDICATOR ON                 
+ *==============================================================================*/
+ 
 
-    /*================END LEFT INDICATOR ON==========================*/ 
-
-
-     /*================LEFT INDICATOR OFF==========================*/ 
+/*==============================================================================
+ *       LEFT INDICATOR OFF            LEFT INDICATOR OFF                 
+ *==============================================================================*/
 
     void leftIndOff()
     {      
         leftIndicatorsOn = false;
         SW_LED[0]=false;            
         SW_LED[1]=false;
-        if(SW_ST[3] == 0){SW_LED[2]=false;}
+        if(!headLightsOn){SW_LED[2]=false;}
         indicatorsOn = false;
         sendDashLight(LEFT_INDICATOR_OFF);
         assSerial.write(LFT_IND_OFF_MSG);            
     }
 
+/*==============================================================================
+ *      END LEFT INDICATOR OFF           END LEFT INDICATOR OFF                 
+ *==============================================================================*/
 
-    /*================END LEFT INDICATOR OFF==========================*/ 
 
+/*==============================================================================
+ *       HAZARD LIGHTS ON            HAZARD LIGHTS ON                 
+ *==============================================================================*/
 
-     /*================HAZARD LIGHTS ON==========================*/ 
+      // Switching on hazard lights overrides all other indicators
 
       void hazardLightsOn()
-      {        
+      {
+          if(indicatorsOn)
+          {
+            if(leftIndicatorsOn)
+            {
+              leftIndOff();
+            }
+            else
+            {
+              rightIndOff();
+            }
+          }
+          
           hazardIndicatorsOn = true;
           IND_INTERVAL[0] = 25;
           IND_INTERVAL[1] = 25;  
@@ -1004,35 +1095,44 @@
           indicatorsOn = true;             
       }
 
+/*==============================================================================
+ *      END HAZARD LIGHTS ON           END HAZARD LIGHTS ON                 
+ *==============================================================================*/
 
-     /*================END HAZARD LIGHTS ON==========================*/ 
 
-     /*================HAZARD LIGHTS OFF==========================*/ 
+/*==============================================================================
+ *       HAZARD LIGHTS OFF            HAZARD LIGHTS OFF                 
+ *==============================================================================*/
 
       void hazardLightsOff()
       {          
           hazardIndicatorsOn = false;
           SW_LED[0]=false;            
           SW_LED[1]=false;
-          if(SW_ST[3] == 0){
-          SW_LED[2]=false;            
-          SW_LED[3]=false;}
+          if(!headLightsOn)
+          {
+            SW_LED[2]=false;            
+            SW_LED[3]=false;
+          }
           indicatorsOn = false;
           sendDashLight(LEFT_INDICATOR_OFF);
           sendDashLight(RIGHT_INDICATOR_OFF);
           assSerial.write(HZD_LGHT_OFF_MSG);           
       }
 
+/*==============================================================================
+ *      END HAZARD LIGHTS OFF           END HAZARD LIGHTS OFF                 
+ *==============================================================================*/
 
-     /*================END HAZARD LIGHTS OFF==========================*/ 
 
-
-    /*================RIGHT INDICATOR ON==========================*/ 
+/*==============================================================================
+ *       RIGHT INDICATOR ON            RIGHT INDICATOR ON                 
+ *==============================================================================*/
 
     void rightIndOn()
     {           
         rightIndicatorsOn = true;   
-        if(SW_ST[3] == 0)
+        if(!headLightsOn)
         {
             IND_INTERVAL[0] = 45;
             IND_INTERVAL[1] = 45; 
@@ -1051,38 +1151,45 @@
         assSerial.write(RGT_IND_ON_MSG);                  
     }
 
+/*==============================================================================
+ *      END RIGHT INDICATOR ON           END RIGHT INDICATOR ON                 
+ *==============================================================================*/
 
-    /*================END RIGHT INDICATOR ON==========================*/ 
 
-
-    /*================RIGHT INDICATOR OFF==========================*/ 
+/*==============================================================================
+ *       RIGHT INDICATOR OFF            RIGHT INDICATOR OFF                 
+ *==============================================================================*/
 
     void rightIndOff()
     {      
         rightIndicatorsOn = false;
         SW_LED[0]=false;            
         SW_LED[1]=false;
-        if(SW_ST[3] == 0){SW_LED[3]=false;} 
+        if(!headLightsOn){SW_LED[3]=false;} 
         indicatorsOn = false;
         sendDashLight(RIGHT_INDICATOR_OFF);
         assSerial.write(RGT_IND_OFF_MSG);                
     }
 
+/*==============================================================================
+ *      END RIGHT INDICATOR OFF           END RIGHT INDICATOR OFF                 
+ *==============================================================================*/
 
-    /*================END RIGHT INDICATOR OFF==========================*/ 
 
-
-    /*================LIGHTS ON============================*/
+/*==============================================================================
+ *      LIGHTS ON           LIGHTS ON           LIGHTS ON       
+ *==============================================================================*/
+    
     void lightsOn()
     {
-      SW_ST[3]++;
-      if (SW_ST[3] > 3) 
+      headLights++;
+      if (headLights > 3) 
       {
-          SW_ST[3] = 3;
+          headLights = 3;
       }
       else
       {
-        switch (SW_ST[3])
+        switch (headLights)
         {
           case 1:      
             headLightsOn = true;
@@ -1093,7 +1200,7 @@
             DASH_BACKLIGHT.on();
             
             assSerial.write(LGHTS_ON_ON_MSG);
-            assSerial.write(SW_ST[3]);
+            assSerial.write(headLights);
             break;
           case 2:
             DIPPED_LIGHTS.on(); // Main lights     
@@ -1101,13 +1208,13 @@
             PLATE_LIGHTS.on();            
             sendDashLight(MAIN_LIGHTS_ON);
             assSerial.write(LGHTS_ON_ON_MSG);
-            assSerial.write(SW_ST[3]);
+            assSerial.write(headLights);
             break;
           case 3:      
             F_BEAM.on(); // Full beam
             sendDashLight(FULL_BEAM_ON);
             assSerial.write(LGHTS_ON_ON_MSG);
-            assSerial.write(SW_ST[3]);
+            assSerial.write(headLights);
             break;
         }
         delay(1000);
@@ -1115,19 +1222,25 @@
       }            
     }
 
-    /*================END LIGHTS ON======================*/
+/*==============================================================================
+ *      END LIGHTS ON           END LIGHTS ON           END LIGHTS ON       
+ *==============================================================================*/
+
     
-    /*================LIGHTS OFF======================*/
+/*==============================================================================
+ *      LIGHTS OFF           LIGHTS OFF           LIGHTS OFF       
+ *==============================================================================*/ 
+
     void lightsOff()
     {
-      SW_ST[3]--;
-      if (SW_ST[3] < 0) 
+      headLights--;
+      if (headLights < 0) 
       {
-          SW_ST[3] = 0;
+          headLights = 0;
       }
       else
       {
-        switch (SW_ST[3])
+        switch (headLights)
         {
           case 0:
             headLightsOn = false;           
@@ -1138,10 +1251,9 @@
                 SW_LED[2]=false; // Left side-light
                 SW_LED[3]=false; // Right side-light
             }
-            DASH_BACKLIGHT.off();
-            
+            DASH_BACKLIGHT.off();            
             assSerial.write(LGHTS_OFF_ON_MSG);
-            assSerial.write(SW_ST[3]);
+            assSerial.write(headLights);
             break;
           case 1:      
             DIPPED_LIGHTS.off(); // Main lights     
@@ -1149,23 +1261,28 @@
             PLATE_LIGHTS.off();   
             sendDashLight(MAIN_LIGHTS_OFF);
             assSerial.write(LGHTS_OFF_ON_MSG);
-            assSerial.write(SW_ST[3]);
+            assSerial.write(headLights);
             break;
           case 2:      
             F_BEAM.off();
             sendDashLight(FULL_BEAM_OFF);
             assSerial.write(LGHTS_OFF_ON_MSG);
-            assSerial.write(SW_ST[3]);
+            assSerial.write(headLights);
             break;
         }
         delay(1000);
         assSerial.write(LGHTS_OFF_OFF_MSG);
       }
     }
-    /*================END LIGHTS OFF======================*/    
+/*==============================================================================
+ *     END LIGHTS OFF          END LIGHTS OFF          END LIGHTS OFF       
+ *==============================================================================*/ 
+ 
 
-    /*================PASSING LIGHTS======================*/
-
+/*==============================================================================
+ *     PASSING LIGHTS          PASSING LIGHTS          PASSING LIGHTS       
+ *==============================================================================*/ 
+ 
     void passingLights()
     {
       assSerial.write(PSS_LGHT_ON_MSG);
@@ -1180,7 +1297,7 @@
            F_BEAM.off();
            delay(120);
           }
-          switch (SW_ST[3])
+          switch (headLights)
           {
             case 2:      
               sendDashLight(MAIN_LIGHTS_ON);
@@ -1200,11 +1317,15 @@
           assSerial.write(PSS_LGHT_OFF_MSG);
     }
 
-    /*================END PASSING LIGHTS======================*/
+/*==============================================================================
+ *     END PASSING LIGHTS          END PASSING LIGHTS          END PASSING LIGHTS       
+ *==============================================================================*/ 
     
 
-    /*================TIME CIRCUITS ON======================*/
-
+/*==============================================================================
+ *     TIME CIRCUITS ON          TIME CIRCUITS ON          TIME CIRCUITS ON       
+ *==============================================================================*/ 
+ 
     void timeCircuitsOn()
     {
       timeCctsOn = true;
@@ -1219,7 +1340,8 @@
       PLUTONIUM_BACKLIGHT.on();  
       PSU.on();              // Power supply unit ON      
       delay(1000);  
-      if(SW_ST[1] == 1) {
+      if(engineStartOn) 
+      {
         my_mp3_play(1,5); // Engine on
       }  
       fluxSwitch = true;
@@ -1227,11 +1349,20 @@
       sendReactorMode(fluxLevel);
     }
 
-    /*================END TIME CIRCUITS ON======================*/
+ /*==============================================================================
+ *   END TIME CIRCUITS ON        END TIME CIRCUITS ON        END TIME CIRCUITS ON        
+ *==============================================================================*/ 
+ 
 
-    /*================TIME CIRCUITS OFF=========================*/
 
-    void timeCircuitsOff()
+
+
+
+/*==============================================================================
+ *     TIME CIRCUITS OFF          TIME CIRCUITS OFF          TIME CIRCUITS OFF       
+ *==============================================================================*/ 
+ 
+     void timeCircuitsOff()
     {
       timeCctsOn = false;
       fluxSwitch = false;
@@ -1246,15 +1377,57 @@
       TC_OFF.on();       
       assSerial.write(TM_CCT_OFF_MSG); 
       delay(1000);
-      if(SW_ST[1] == 1) {
+      if(engineStartOn) 
+      {
         my_mp3_play(1,5); // Engine on
       }  
     }
 
-    /*================END TIME CIRCUITS OFF=========================*/
+ /*==============================================================================
+ *   END TIME CIRCUITS OFF        END TIME CIRCUITS OFF        END TIME CIRCUITS OFF        
+ *==============================================================================*/ 
+    
 
 
-    /*================HORN=========================*/
+/*==============================================================================
+ *      BRAKES ON             BRAKES ON               BRAKES ON       
+ *==============================================================================*/ 
+
+    void brakesOn()
+    {
+          brakeLightsOn = true;
+          appBrake = true;
+          BRAKE_LIGHTS.on();
+          assSerial.write(BRAKE_LIGHTS_ON_MSG);
+    }
+
+
+
+ /*==============================================================================
+ *      END BRAKES ON            END BRAKES ON               END BRAKES ON        
+ *==============================================================================*/ 
+
+
+/*==============================================================================
+ *      BRAKES OFF             BRAKES OFF               BRAKES OFF       
+ *==============================================================================*/ 
+
+    void brakesOff()
+    {
+          brakeLightsOn = false;
+          BRAKE_LIGHTS.off();
+          assSerial.write(BRAKE_LIGHTS_OFF_MSG);
+          appBrake = false;
+    }
+
+
+ /*==============================================================================
+ *      END BRAKES OFF            END BRAKES OFF               END BRAKES OFF        
+ *==============================================================================*/ 
+
+/*==============================================================================
+ *      HORN             HORN               HORN       
+ *==============================================================================*/
 
     void horn()
     {
@@ -1262,16 +1435,22 @@
       my_mp3_play(1,6);
       delay(100);
       my_mp3_playend();
-      if (SW_ST[1] == 1) {
+      if (engineStartOn) 
+      {
           my_mp3_play(1,5);
-          }
+      }
       delay(100);
       assSerial.write(HORN_OFF_MSG);
     }
 
-    /*================END HORN=========================*/
+/*==============================================================================
+ *      END HORN             END HORN               END HORN       
+ *==============================================================================*/ 
 
-    /*================DISPLAY MODE ON=========================*/
+/*==============================================================================
+ *      DISPLAY MODE ON             DISPLAY MODE ON               DISPLAY MODE ON       
+ *==============================================================================*/ 
+ 
     void displayModeOn()
       {
         switchOffMultipleFunctions(); 
@@ -1290,9 +1469,16 @@
 
         EIGHTY8_MPH.on();
        }
-    /*================END DISPLAY MODE ON=========================*/
 
-    /*================DISPLAY MODE OFF=========================*/
+/*==============================================================================
+ *     END DISPLAY MODE ON           EMD DISPLAY MODE ON           END DISPLAY MODE ON       
+ *==============================================================================*/ 
+ 
+
+ /*==============================================================================
+ *      DISPLAY MODE OFF             DISPLAY MODE OFF               DISPLAY MODE OFF       
+ *==============================================================================*/ 
+
     void displayModeOff()
       {      
         isDisplayModeOn = false;
@@ -1308,14 +1494,19 @@
                 
         assSerial.write(DISP_MODE_OFF_MSG);
       }
-    /*================END DISPLAY MODE OFF=========================*/
+      
+ /*==============================================================================
+ *    END DISPLAY MODE OFF         END DISPLAY MODE OFF          END DISPLAY MODE OFF       
+ *==============================================================================*/ 
+
 
 /*==============================================================================
  *      TIME TRAVEL ROUTINE            TIME TRAVEL ROUTINE        
  *==============================================================================*/    
     
     /*===============START TIME TRAVEL======================*/
-    void time_travel() {
+    
+    void timeTravel() {
            assSerial.write(TM_TRAV_ON_MSG);   
 
            speedoInterval = B8_speedoIntervalSetting;
@@ -1887,8 +2078,10 @@
         assSerial.write(TM_TRAV_OFF_MSG);
     }
 
-    /*==================End Time Travel=====================*/
-
+/*==============================================================================
+ *      END TIME TRAVEL ROUTINE            END TIME TRAVEL ROUTINE        
+ *==============================================================================*/    
+      
 
 /*==============================================================================
  *      TIME TRAVEL MOVIE DEMO ROUTINE            TIME TRAVEL MOVIE DEMO ROUTINE        
@@ -2084,7 +2277,6 @@
             DIPPED_LIGHTS.on(); //Main beam, rear lights, licence plate ON
             REAR_LIGHTS.on();
             PLATE_LIGHTS.on();
-            //SW_ST[3] = 1;     // Set side lights switch ON 
             
             sendDashLight(MAIN_LIGHTS_ON);  // Main lights ON
             
@@ -2278,10 +2470,7 @@
     
           if((currentMillis - previousTtMillis >= INTERVAL[j]) && (nineteenth)) {
 
-            previousTtMillis = currentMillis;
-          
-//            FLUX_TRIGGER.off();
-            
+            previousTtMillis = currentMillis;            
             
             nineteenth = false;
             twentieth = true;            
@@ -2342,10 +2531,8 @@
     
           if((currentMillis - previousTtMillis >= INTERVAL[j]) && (fluxflash)) {
 
-            previousTtMillis = currentMillis;
-    
-//            FLUX_ON_OFF.on();
-//            FLUX_FLASH.on();
+            previousTtMillis = currentMillis;    
+
             sendReactorMode(RE_ENTRY);
             
             fluxflash = false;
@@ -2394,7 +2581,6 @@
             DIPPED_LIGHTS.on(); //Main beam, rear lights, licence plate ON
             REAR_LIGHTS.on();
             PLATE_LIGHTS.on();
-            //SW_ST[3] = 1;     // Set side lights switch ON 
             sendDashLight(MAIN_LIGHTS_ON);
             
             fluxLevel = 1;  // FLUX LEVEL 1 
@@ -2524,16 +2710,16 @@
           assSerial.write(MOV_DEMO_OFF_MSG);          
     }
 
+/*==============================================================================
+ *      END TIME TRAVEL MOVIE DEMO ROUTINE           END TIME TRAVEL MOVIE DEMO ROUTINE        
+ *==============================================================================*/    
 
-    /*================END TIME TRAVEL MOVIE DEMO==================*/  
-
-
+ 
 
 /*==============================================================================
  *        CHECK CAR SWITCHES ROUTINE                CHECK CAR SWITCHES ROUTINE        
- *==============================================================================*/
- 
-    //-----------------------------------------------------------------------
+ *==============================================================================*/ 
+    
     void checkSwitches() {
       
       if (!ACCELERATOR_SW.readState())
@@ -2563,7 +2749,7 @@
               {
                   my_mp3_play(1,10);       // ドア音
                   delay(100);
-                  if (SW_ST[1] == 1)
+                  if (engineStartOn)
                   {
                       my_mp3_playend();
                       my_mp3_play(1,5);
@@ -2585,7 +2771,7 @@
               {
                   my_mp3_play(1,10);       // ドア音
                   delay(100);
-                  if (SW_ST[1] == 1)
+                  if (engineStartOn)
                   {
                       my_mp3_playend();
                       my_mp3_play(1,5);
@@ -2667,7 +2853,10 @@
       } //エンジンルーム
       
     }
-    //-----------------------------------------------------------------------
+
+/*==============================================================================
+ *       END CHECK CAR SWITCHES ROUTINE                END CHECK CAR SWITCHES ROUTINE        
+ *==============================================================================*/
 
 
 /*==============================================================================
@@ -2722,10 +2911,13 @@
           }             
       }
 
-    /*==================END UPDATE FLUX CAPACITOR=======================*/
+/*==============================================================================
+ *       END FLUX CAPACITOR ROUTINE                END FLUX CAPACITOR ROUTINE        
+ *==============================================================================*/
+
 
 /*==============================================================================
- *  SPECTRUM INDICATOR DISPLAY ROUTINES       SPECTRUM INDICATOR DISPLAY ROUTINES 
+ *                STATUS INDICATOR DISPLAY UPDATE ROUTINES       
  *==============================================================================*/    
 
     /*==================UPDATE LEVEL ONE MATRIX=======================*/
@@ -2878,6 +3070,11 @@
 
     /*==================END UPDATE COLUMN TWO FIVE MATRIX=======================*/
 
+/*==============================================================================
+ *                END STATUS INDICATOR DISPLAY UPDATE ROUTINES      
+ *==============================================================================*/    
+    
+
     /*==================RESET MATRIX ONE========================================*/
     void resetFluxTree() {
          resetFlux();
@@ -3021,19 +3218,11 @@
           break;
      
         case 126:  // BRAKE_LIGHTS OFF
-          brakeLightsOn = false;
-          SW_ST[2] = 0;
-          BRAKE_LIGHTS.off();
-          assSerial.write(BRAKE_LIGHTS_OFF_MSG);
-          appBrake = false;
+          brakesOff();
           break;
      
         case 127:  // BRAKE_LIGHTS ON
-          brakeLightsOn = true;
-          appBrake = true;
-          SW_ST[2] = 1;
-          BRAKE_LIGHTS.on();
-          assSerial.write(BRAKE_LIGHTS_ON_MSG);
+          brakesOn();
           break;
      
         case 129:  // Accelerator
@@ -3078,7 +3267,7 @@
 
         case 139:  // Time Travel
           switchOffMultipleFunctions();
-          time_travel();
+          timeTravel();
           break;
 
         case 140:  // Radio Stop
@@ -3095,13 +3284,15 @@
       }
     }
 
+ /*==============================================================================
+ *         END GET APP INSTRUCTIONS             END GET APP INSTRUCTIONS      
+ *==============================================================================*/
 
-    /*===================END GET APP INSTRUCTION====================*/
 
-    /****************************************************************
-     * ==================I2C FUNCTIONS===============================
-     ***************************************************************/
-     
+/****************************************************************
+ * ==================I2C FUNCTIONS===============================
+ ***************************************************************/
+ 
     void send_flux(int h) {
     byte c;
       c=h;
@@ -3126,7 +3317,17 @@
       Wire.endTransmission();
     }
 
+/********************************************************************
+ * ==================END I2C FUNCTIONS===============================
+ ********************************************************************/
 
+
+/*==============================================================================
+ *        ENTRY FLASH ROUTINE      ENTRY FLASH ROUTINE        ENTRY FLASH ROUTINE
+ *==============================================================================*/
+
+    // Switch all lights ON and OFF during time travel re-entry in timeTravelMovieDemo
+    
     void entryFlash() {
            DASH_BACKLIGHT.on();
            PLUTONIUM_BACKLIGHT.on();
@@ -3189,6 +3390,11 @@
            FLUX_BAND.off();           
            sendDashLight(LIGHTS_OFF);          
       }
+
+/*===================================================================================
+ *  END ENTRY FLASH ROUTINE      END ENTRY FLASH ROUTINE      END ENTRY FLASH ROUTINE
+ *===================================================================================*/
+      
     
       void lightsOut() {
 
@@ -3203,10 +3409,11 @@
  *        SPEEDO ROUTINES      SPEEDO ROUTINES        SPEEDO ROUTINES
  *==============================================================================*/
 
+      // Controls speedo display during timeTravel and timeTravelMovieDemo routines
+
        void B8_speedoAcceleration() {
           speedo.writeDigitNum(0, (counter / 1000), false);
-          speedo.writeDigitNum(1, (counter / 100) % 10, true);
-          //speedo.drawColon(true);
+          speedo.writeDigitNum(1, (counter / 100) % 10, true);          
           speedo.writeDigitNum(3, (counter / 10) % 10, false);
           speedo.writeDigitNum(4, counter % 10, false);  
           speedo.writeDisplay();
@@ -3216,8 +3423,7 @@
     
       void speedoAcceleration() {
           speedo.writeDigitNum(0, (counter / 1000), false);
-          speedo.writeDigitNum(1, (counter / 100) % 10, true);
-          //speedo.drawColon(true);
+          speedo.writeDigitNum(1, (counter / 100) % 10, true);          
           speedo.writeDigitNum(3, (counter / 10) % 10, false);
           speedo.writeDigitNum(4, counter % 10, false);  
           speedo.writeDisplay();
@@ -3245,3 +3451,8 @@
         }
         
       }
+
+/*==============================================================================
+ *        END SPEEDO ROUTINES      END SPEEDO ROUTINES        END SPEEDO ROUTINES
+ *==============================================================================*/
+      
