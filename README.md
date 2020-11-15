@@ -5,6 +5,8 @@ Main Parts:
 
 Arduino Mega 2650 Pro Mini x 1 (Alliexpress),
 
+Mounting for Arduino Mega x 1 (Shapeways),
+
 Arduino Pro Mini x 1 (Driver's Console) (Alliexpress),
 
 DfRobot Beetle x 1 (Reactor) (Pi Hut)
@@ -28,6 +30,13 @@ Speedometer:
 
 Adafruit 0.56" 4-Digit 7-Segment Display w/I2C Backpack (Pimoroni)
 
+Flux Bands:
+Inverter - 9v Potted - 100cm2 No Switch
+3-way Standard Splitter
+3 x MAXI 1.5mm x 1m EL wire
+NOTE - the above items were bought from EL Tape and Wire (address below).
+	Alternatively the EL Mod can be bought from ModelModz.
+
 Modelmodz Parts:
 
 Flux Capacitor,
@@ -36,7 +45,9 @@ Xmas Tree,
 
 Dash Display,
 
-Center Console
+Center Console,
+
+EL Wire Mod.
 
 
 This system is controlled by an Bluetooth Android app created in App Inventor 2(ai2)
@@ -209,7 +220,13 @@ https://appinventor.mit.edu
 FaceBook Demo -
 https://www.facebook.com/noci50/videos/10156699960936765/
 
+EL Wire for Flux Bands - 
+https://elpanelandtape.co.uk/
+
 DfRobot Beetle - 
 https://wiki.dfrobot.com/Beetle_SKU_DFR0282
+
+Shapeways - 
+https://www.shapeways.com/product/8V7J5HJEP/1-8-bttf-delorean-bulkhead-hatch-for-arduino-mega?etId=189700217&option=86395156&utm_campaign=payment-received&utm_content=7&utm_medium=email&utm_source=automated-contact
 
 
