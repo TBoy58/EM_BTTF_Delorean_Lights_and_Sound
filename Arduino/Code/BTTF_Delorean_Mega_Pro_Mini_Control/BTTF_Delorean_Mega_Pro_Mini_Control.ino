@@ -535,7 +535,8 @@
  *==============================================================================*/    
     
     // タイマー割り込み時に処理される関数
-    void indicatorFlash() {  
+    void indicatorFlash() 
+    {  
       /*     
        *      Routine to make indicators flash 
        *      
@@ -543,82 +544,93 @@
       
       for( int i = 0; i < INDMAX; i++ )
       {
-      if (IND_INTERVAL[i] > 0) {     // LED点滅処理
-         FLASH_DELAY[i]--;
-         if (SW_On[i] == true)      // LED点灯中
-            {
-            if (FLASH_DELAY[i] <= 0) 
-               { 
-                  SW_On[i]  = false;
-                  SW_On[i + 2]  = false;
-                  FLASH_DELAY[i] = IND_INTERVAL[i]; //FLASH_INTERVAL;                  
-               }
-            } 
-            else 
-            {           // LED消灯中
-               if (FLASH_DELAY[i] <= 0)
-               { 
-                  SW_On[i]  = true;
-                  SW_On[i + 2]  = true;
-                  FLASH_DELAY[i] = IND_INTERVAL[i]; //FLASH_INTERVAL;                  
-               }
+        // APPLY INDICATOR DELAY AND SWITCH INDICATORS ON OR OFF 
+        if (IND_INTERVAL[i] > 0) 
+        {     // LED点滅処理
+          FLASH_DELAY[i]--;
+          if (SW_On[i] == true)      // LED点灯中
+          {
+              if (FLASH_DELAY[i] <= 0) 
+              { 
+                SW_On[i]  = false;
+                SW_On[i + 2]  = false;
+                FLASH_DELAY[i] = IND_INTERVAL[i]; //FLASH_INTERVAL;                  
+              }
+          } 
+          else 
+          {           // LED消灯中
+              if (FLASH_DELAY[i] <= 0)
+              { 
+                SW_On[i]  = true;
+                SW_On[i + 2]  = true;
+                FLASH_DELAY[i] = IND_INTERVAL[i]; //FLASH_INTERVAL;                  
+              }
           }
-      } else {SW_On[i] = true;}   // LED常灯処理    
-      
-       if ((SW_On[i] == true) && (SW_LED[i] == true)) {
-            if (i == 2 || i == 3)
+        } 
+        else 
+        {   // i = 2/3 ALWAYS TRUE
+          SW_On[i] = true;
+        }   // LED常灯処理    
+        
+        // IF THE LEFT OR RIGHT REAR INDICATOR (2/3) IS SELECTED 'ON' THEN
+        // DETERMINE HOW THE FRONT INDICATORS ON DEPENDING ON THE HEADLIGHTS
+        if ((SW_On[i] == true) && (SW_LED[i] == true)) 
+        {
+          if (i == 2 || i == 3)
+          {
+            if(i == 2)
+            {
+              if((SW_On[0] == true) && (SW_LED[0] == true))
+              {
+                L_SIDE.on();
+                sendDashLight(LEFT_INDICATOR_ON);
+              }
+              else
+              {
+                if(!headLightsOn)
                 {
-                  if(i == 2)
-                  {
-                    if((SW_On[0] == true) && (SW_LED[0] == true))
-                    {
-                      L_SIDE.on();
-                      sendDashLight(LEFT_INDICATOR_ON);
-                    }
-                    else
-                    {
-                      if(!headLightsOn)
-                      {
-                        L_SIDE.off();
-                        sendDashLight(LEFT_INDICATOR_OFF);
-                      }
-                      else
-                      {
-                        L_SIDE.level(80);
-                        sendDashLight(LEFT_INDICATOR_OFF);
-                      }
-                    }
-                  }
-                  if(i == 3)
-                  {
-                    if((SW_On[1] == true) && (SW_LED[1] == true))
-                    {
-                      R_SIDE.on();
-                      sendDashLight(RIGHT_INDICATOR_ON);
-                    }
-                    else
-                    {
-                      if(!headLightsOn)
-                      {
-                        R_SIDE.off();
-                        sendDashLight(RIGHT_INDICATOR_OFF);
-                      }
-                      else
-                      {
-                        R_SIDE.level(80);
-                        sendDashLight(RIGHT_INDICATOR_OFF);
-                      }
-                    }
-                  }
+                  L_SIDE.off();
+                  sendDashLight(LEFT_INDICATOR_OFF);
+                }
+                else
+                {
+                  L_SIDE.level(80);
+                  sendDashLight(LEFT_INDICATOR_OFF);
+                }
+              }
+            }
 
-                } 
-                else 
-                  {IND_LGHTS[i].on();} 
-       } 
-       else 
-       {
-           IND_LGHTS[i].off();
-       }       
+            if(i == 3)
+            {
+              if((SW_On[1] == true) && (SW_LED[1] == true))
+              {
+                R_SIDE.on();
+                sendDashLight(RIGHT_INDICATOR_ON);
+              }
+              else
+              {
+                if(!headLightsOn)
+                {
+                  R_SIDE.off();
+                  sendDashLight(RIGHT_INDICATOR_OFF);
+                }
+                else
+                {
+                  R_SIDE.level(80);
+                  sendDashLight(RIGHT_INDICATOR_OFF);
+                }
+              }
+            }
+          } 
+          else 
+          {
+            IND_LGHTS[i].on();
+          } 
+        } 
+        else 
+        {
+          IND_LGHTS[i].off();
+        }       
       }     
     }
 
