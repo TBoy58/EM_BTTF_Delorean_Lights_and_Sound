@@ -548,23 +548,23 @@
         if (IND_INTERVAL[i] > 0) 
         {     // LED点滅処理
           FLASH_DELAY[i]--;
-          if (SW_On[i] == true)      // LED点灯中
+          if (FLASH_DELAY[i] <= 0)
           {
-              if (FLASH_DELAY[i] <= 0) 
-              { 
-                SW_On[i]  = false;
-                SW_On[i + 2]  = false;
-                FLASH_DELAY[i] = IND_INTERVAL[i]; //FLASH_INTERVAL;                  
-              }
-          } 
-          else 
-          {           // LED消灯中
-              if (FLASH_DELAY[i] <= 0)
-              { 
+            if (SW_On[i] == true)      // LED点灯中
+            {                
+                  SW_On[i]  = false;
+                  SW_On[i + 2]  = false;                                    
+                
+            } 
+            else 
+            {           // LED消灯中
+                 
                 SW_On[i]  = true;
-                SW_On[i + 2]  = true;
-                FLASH_DELAY[i] = IND_INTERVAL[i]; //FLASH_INTERVAL;                  
-              }
+                SW_On[i + 2]  = true;                             
+                
+            }
+
+            FLASH_DELAY[i] = IND_INTERVAL[i];
           }
         } 
         else 
@@ -1081,18 +1081,10 @@
       // Switching on hazard lights overrides all other indicators
 
       void hazardLightsOn()
-      {
-          if(indicatorsOn)
-          {
-            if(leftIndicatorsOn)
-            {
-              leftIndOff();
-            }
-            else
-            {
-              rightIndOff();
-            }
-          }
+      {          
+          if(leftIndicatorsOn) leftIndOff();        
+          
+          if(rightIndicatorsOn) rightIndOff();          
           
           hazardIndicatorsOn = true;
           IND_INTERVAL[0] = 25;
